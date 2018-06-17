@@ -1,0 +1,75 @@
+html,
+body {
+    font-family: Arial, sans-serif;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+}
+
+.sidenav h2 {
+    color: grey;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.filter-controls {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    border: 1px solid rgb(0, 111, 148);
+}
+
+#filter-locations-text {
+    width: 75%;
+}
+
+#filter-locations {
+    width: 23%;
+    display: flex;
+    align-items: center;
+    padding: 7px 28px;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #fff;
+    background-color: #008CBA;
+    border: none;
+    border-radius: 0px 3px 3px 0px;
+  }
+
+#filter-locations:hover {
+    background-color: rgb(0, 111, 148);
+}
+
+#filter-locations:active {
+    background-color: rgb(0, 111, 148);
+    transform: translateY(3px);
+}
+
+.filter-icon {
+    display: inline-block;
+}
+
+#main {
+    transition: margin-left .5s;
+    padding: 16px;
+}
+
+.hamburger {
+    font-size: 30px;
+    cursor: pointer;
+}
