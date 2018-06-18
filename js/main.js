@@ -1,6 +1,7 @@
 // Global variables
-
 var map;
+var markers = [];
+
 
 // To toglgle sideNav
 // true = Open
@@ -14,6 +15,25 @@ var mobile = false;
 var ipad = false;
 
 
+var initialLocations = [
+    {title: 'Glenshire Park', location: {lat: 29.647542, lng: -95.536096}},
+    {title: 'Gammil Park', location: {lat: 29.634687, lng: -95.518776}},
+    {title: 'Fondren Park', location: {lat: 29.632763, lng: -95.514022}},
+    {title: 'Buffalo Run Park', location: {lat: 29.614102, lng: -95.511442}},
+    {title: 'Bicentennial Park', location: {lat: 29.611448, lng: -95.540761}}
+];
+
+
+
+/* Model */
+var Location = function(data) {
+    this.title = data.title;
+    this.position = { lat: data.location.lat, lng: data.location.lng};
+}
+
+
+
+/* View Model */
 var ViewModel = function() {
 
     var self = this;
@@ -34,12 +54,57 @@ var ViewModel = function() {
 
     renderNavBar();
 
-    self.toggleNav = function () {
+    self.toggleNav = function() {
         navStatus = !navStatus;
         renderNavBar();
     }
+
+
+    // Create Location object using each location in json input
+    // and add it to the locationsList observable array
+    self.locationsList = ko.observableArray([]);
+    initialLocations.forEach( function(location) {
+        self.locationsList.push(new Location(location));
+    });
+
+    // Iterate through locationsList observable array
+    // and create actual map markers.
+    // Add them to global markers list
+    for (var i=0; i<self.locationsList().length; i++) {
+        var marker = new google.maps.Marker({
+            position: self.locationsList()[i].position,
+            title: self.locationsList()[i].title,
+            animation: google.maps.Animation.DROP,
+            icon: defaultIcon,
+            id: i
+        });
+        markers.push(marker);
+    }
 }
 
+
+
+// Maps callback function
+function initMap() {
+    // Constructor creates a new map - only center and zoom are required.
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 29.616067, lng: -95.557722},
+        zoom: 13
+    });
+
+    // Putting all the location markers on the map
+    var bounds = new google.maps.LatLngBounds();
+    // Extend the boundaries of the map for each marker and display the markers
+    for (var i = 0; i < markers.length; i++) {
+        markers[i].setMap(map);
+        bounds.extend(markers[i].position);
+    }
+    map.fitBounds(bounds);
+}
+
+
+
+// Helper functions
 function renderNavBar() {
     if (!navStatus) {
         document.getElementById("mySidenav").style.width = "0px";
@@ -66,12 +131,5 @@ function renderNavBar() {
     }
 }
 
-function initMap() {
-    // Constructor creates a new map - only center and zoom are required.
-    map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: 29.616067, lng: -95.557722},
-        zoom: 13
-    });
-}
 
 ko.applyBindings(new ViewModel());
