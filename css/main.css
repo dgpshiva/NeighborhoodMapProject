@@ -67,9 +67,16 @@ body {
 #main {
     transition: margin-left .4s;
     padding: 16px;
+    background-color: rgb(49, 49, 49);
 }
 
 .hamburger {
     font-size: 30px;
     cursor: pointer;
+    color: #008CBA;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
 }

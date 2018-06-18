@@ -1,10 +1,18 @@
+// Global variables
+
+var map;
+
 // To toglgle sideNav
 // true = Open
 // false = Closed
 var navStatus = true;
 
+// true if viewport has mobile dimensions
 var mobile = false;
+
+// true if viewport has ipad dimensions
 var ipad = false;
+
 
 var ViewModel = function() {
 
@@ -15,6 +23,7 @@ var ViewModel = function() {
         navStatus = false;
         mobile = true;
     }
+    // If iPad keep the sideNav open
     else if (window.innerWidth > 400 && window.innerWidth < 800) {
         navStatus = false;
         ipad = true;
@@ -55,6 +64,14 @@ function renderNavBar() {
         document.getElementById("mySidenav").style.width = "400px";
         document.getElementById("main").style.marginLeft = "400px";
     }
+}
+
+function initMap() {
+    // Constructor creates a new map - only center and zoom are required.
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 29.616067, lng: -95.557722},
+        zoom: 13
+    });
 }
 
 ko.applyBindings(new ViewModel());
