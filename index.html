@@ -10,7 +10,7 @@
 </head>
 <body>
     <div id="mySidenav" class="sidenav">
-        <h2>Parks in Stafford</h2>
+        <h2 id="title-text">Parks in Stafford</h2>
         <div class="filter-controls">
             <input id="filter-locations-text" type="text" placeholder="Filter Parks">
             <button id="filter-locations">
@@ -19,9 +19,10 @@
         </div>
     </div>
     <div id="main">
-        <span class="hamburger" onclick="openNav()">&#9776;</span>
+        <span class="hamburger" data-bind="click: toggleNav">&#9776;</span>
     </div>
 
+    <script defer src="js/lib/knockout-3.2.0.js"></script>
     <script defer src="js/main.js"></script>
 </body>
 </html>
