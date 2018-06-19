@@ -1,9 +1,4 @@
-// Global variables
-var map;
-
-// Glocal dict to map each Location to it's corresponding Marker
-// so that retrival of Marker for a Location can be done in O(1)
-var locationTitleMarkerDict = {}
+/* For initial render of view based on viewport dimensions */
 
 // To toglgle sideNav
 // true = Open
@@ -16,6 +11,24 @@ var mobile = false;
 // true if viewport has ipad dimensions
 var ipad = false;
 
+// If mobile device, keep the sideNav closed
+if (window.innerWidth < 400) {
+    navStatus = false;
+    mobile = true;
+}
+
+// If iPad keep the sideNav open
+else if (window.innerWidth > 400 && window.innerWidth < 800) {
+    navStatus = false;
+    ipad = true;
+}
+else {
+    navStatus = true;
+}
+
+renderNavBar();
+
+
 
 // Locations data to be used by the app
 // This can eventually come from a server
@@ -27,6 +40,12 @@ var initialLocations = [
     {title: "Bicentennial Park", location: {lat: 29.611448, lng: -95.540761}}
 ];
 
+// Global variables
+var map;
+
+// Glocal dict to map each Location to it's corresponding Marker
+// so that retrival of Marker for a Location can be done in O(1)
+var locationTitleMarkerDict = {}
 
 
 /* Model */
@@ -36,29 +55,13 @@ var Location = function(data) {
 }
 
 
-
 /* View Model */
 var ViewModel = function() {
 
     var self = this;
 
-    // If mobile device, keep the sideNav closed
-    if (window.innerWidth < 400) {
-        navStatus = false;
-        mobile = true;
-    }
-
-    // If iPad keep the sideNav open
-    else if (window.innerWidth > 400 && window.innerWidth < 800) {
-        navStatus = false;
-        ipad = true;
-    }
-    else {
-        navStatus = true;
-    }
-
-    renderNavBar();
-
+    // Function to toggle sideNav open and close
+    // on click of hamburger
     self.toggleNav = function() {
         navStatus = !navStatus;
         renderNavBar();
