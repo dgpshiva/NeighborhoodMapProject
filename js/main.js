@@ -43,6 +43,7 @@ var ViewModel = function() {
         navStatus = false;
         mobile = true;
     }
+
     // If iPad keep the sideNav open
     else if (window.innerWidth > 400 && window.innerWidth < 800) {
         navStatus = false;
@@ -57,7 +58,7 @@ var ViewModel = function() {
     self.toggleNav = function() {
         navStatus = !navStatus;
         renderNavBar();
-    }
+    };
 
 
     // Create Location object using each location in json input
@@ -70,16 +71,17 @@ var ViewModel = function() {
     // Iterate through locationsList observable array
     // and create actual map markers.
     // Add them to global markers list
-    for (var i=0; i<self.locationsList().length; i++) {
-        var marker = new google.maps.Marker({
-            position: self.locationsList()[i].position,
-            title: self.locationsList()[i].title,
-            animation: google.maps.Animation.DROP,
-            icon: defaultIcon,
-            id: i
-        });
-        markers.push(marker);
-    }
+    self.createMarkers = function() {
+        for (var i=0; i<self.locationsList().length; i++) {
+            var marker = new google.maps.Marker({
+                position: self.locationsList()[i].position,
+                title: self.locationsList()[i].title,
+                animation: google.maps.Animation.DROP,
+                id: i
+            });
+            markers.push(marker);
+        }
+    };
 }
 
 
@@ -91,6 +93,11 @@ function initMap() {
         center: {lat: 29.616067, lng: -95.557722},
         zoom: 13
     });
+
+    // Calling the ViewModel funtion to create the markers
+    // and populate the global markers[] array with them
+    var vm = new ViewModel();
+    vm.createMarkers();
 
     // Putting all the location markers on the map
     var bounds = new google.maps.LatLngBounds();
