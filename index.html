@@ -19,7 +19,7 @@
         </div>
         <ul id="location-list"></ul>
         <ul data-bind="foreach: locationsList">
-            <li class="list-elements" data-bind="text: title"></li>
+            <li class="list-elements" data-bind="text: title, click: $parent.toggleMarkerBounce"></li>
             <br>
             <br>
         </ul>

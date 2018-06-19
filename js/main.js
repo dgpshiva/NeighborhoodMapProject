@@ -80,22 +80,30 @@ var ViewModel = function() {
                 id: i
             });
 
-            // Add the marker created to the global markers array
-            markers.push(marker);
-
             // Add event listener to make marker bounce when clicked
             marker.addListener('click', function() {
                 toggleBounce(this);
             });
 
-
+            // Add the marker created to the global markers array
+            markers.push(marker);
         }
     };
+
+    // Function to toggle marker bounce when its corresponding
+    // list element is clicked
+    self.toggleMarkerBounce = function(data) {
+        markers.forEach( function(marker) {
+            if (marker.title === data.title) {
+                toggleBounce(marker);
+            }
+        });
+    }
 }
 
 
 
-// Maps callback function
+// Maps success callback function
 function initMap() {
     // Constructor creates a new map - only center and zoom are required.
     map = new google.maps.Map(document.getElementById('map'), {
