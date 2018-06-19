@@ -21,8 +21,8 @@
             <button id="reset-button" data-bind="click: resetFilter">Reset</button>
         </div>
         <ul id="location-list"></ul>
-        <ul data-bind="foreach: locationsList">
-            <li class="list-elements" data-bind="text: title, click: $parent.toggleMarkerBounce"></li>
+        <ul class="list" data-bind="foreach: locationsList">
+            <li class="list-elements" data-bind="text: title, click: $parent.toggleSelected, css: { 'list-element-selected': isSelected() }"></li>
             <br>
             <br>
         </ul>

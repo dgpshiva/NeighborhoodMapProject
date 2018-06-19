@@ -52,6 +52,7 @@ var locationTitleMarkerDict = {}
 var Location = function(data) {
     this.title =  data.title;
     this.position = { lat: data.location.lat, lng: data.location.lng};
+    this.isSelected = ko.observable(false);
 }
 
 
@@ -107,7 +108,13 @@ var ViewModel = function() {
 
     // Function to toggle marker bounce when its corresponding
     // list element is clicked
-    self.toggleMarkerBounce = function(data) {
+    self.toggleSelected = function(data) {
+
+        // Toggling isSelected property of model
+        // This is bound to the css class to be applied on selection
+        data.isSelected() ? data.isSelected(false) : data.isSelected(true);
+
+        // Toggling selected location marker's animation
         toggleBounce(locationTitleMarkerDict[data.title]);
     }
 

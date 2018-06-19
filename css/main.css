@@ -119,6 +119,21 @@ ul {
     list-style-type: none;
 }
 
+.list {
+    padding: 0;
+}
+
 .list-elements {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    padding-left: 20px;
+    height: 40px;
     color: grey;
+    text-align: justify;
+}
+
+.list-element-selected {
+    color: white;
+    background-color: rgb(68, 68, 68);
 }
