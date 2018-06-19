@@ -79,7 +79,16 @@ var ViewModel = function() {
                 animation: google.maps.Animation.DROP,
                 id: i
             });
+
+            // Add the marker created to the global markers array
             markers.push(marker);
+
+            // Add event listener to make marker bounce when clicked
+            marker.addListener('click', function() {
+                toggleBounce(this);
+            });
+
+
         }
     };
 }
@@ -104,6 +113,7 @@ function initMap() {
     // Extend the boundaries of the map for each marker and display the markers
     for (var i = 0; i < markers.length; i++) {
         markers[i].setMap(map);
+
         bounds.extend(markers[i].position);
     }
     map.fitBounds(bounds);
@@ -135,6 +145,15 @@ function renderNavBar() {
     else {
         document.getElementById("mySidenav").style.width = "400px";
         document.getElementById("main").style.marginLeft = "400px";
+    }
+}
+
+function toggleBounce(marker) {
+    if (marker.getAnimation() !== null) {
+        marker.setAnimation(null);
+    }
+    else {
+       marker.setAnimation(google.maps.Animation.BOUNCE);
     }
 }
 
