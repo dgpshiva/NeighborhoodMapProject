@@ -73,7 +73,11 @@ var ViewModel = function() {
     // Create Location object using each location in json input
     // and add it to the locationsList observable array
     self.locationsList = ko.observableArray([]);
+
+    // Adding the Location objects to this array also
+    // This will be used for the search and reseting the filter
     self.masterLocationsList = [];
+
     initialLocations.forEach( function(location) {
         self.locationsList.push(new Location(location));
         self.masterLocationsList.push(new Location(location));
@@ -109,19 +113,37 @@ var ViewModel = function() {
 
 
     self.filterLocations = function(data) {
+        // Array to store the Location objects matching the filter applied by user
         var filteredLocationsList = [];
+
+        // Alert user if Filter button clicked without any input
         if (self.filterText() === "") {
             window.alert("Please enter some text to filter.");
             return;
         }
+
+        // Iterating the self.masterLocationsList array to find Location objects
+        // matching the filter applied by user.
+        // And loading them into the filteredLocationsList array
         self.masterLocationsList.forEach( function(location) {
             if (location.title.toUpperCase().indexOf(self.filterText().toUpperCase()) > -1) {
                 filteredLocationsList.push(location);
             }
         });
+
+        // Clearing the locationsList observable array
         self.locationsList.removeAll();
+
+        // Clearing all the exisitng markers from the map
+        for (var key in locationTitleMarkerDict) {
+            locationTitleMarkerDict[key].setMap(null);
+        }
+
+        // Loading the locationsList observable array with Location objects filtered.
+        // And placing their markers on the map
         filteredLocationsList.forEach( function(location) {
             self.locationsList.push(location);
+            locationTitleMarkerDict[location.title].setMap(map);
         });
     };
 }
