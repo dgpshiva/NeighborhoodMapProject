@@ -16,18 +16,18 @@ var ipad = false;
 
 
 var initialLocations = [
-    {title: 'Glenshire Park', location: {lat: 29.647542, lng: -95.536096}},
-    {title: 'Gammil Park', location: {lat: 29.634687, lng: -95.518776}},
-    {title: 'Fondren Park', location: {lat: 29.632763, lng: -95.514022}},
-    {title: 'Buffalo Run Park', location: {lat: 29.614102, lng: -95.511442}},
-    {title: 'Bicentennial Park', location: {lat: 29.611448, lng: -95.540761}}
+    {title: "Glenshire Park", location: {lat: 29.647542, lng: -95.536096}},
+    {title: "Gammil Park", location: {lat: 29.634687, lng: -95.518776}},
+    {title: "Fondren Park", location: {lat: 29.632763, lng: -95.514022}},
+    {title: "Buffalo Run Park", location: {lat: 29.614102, lng: -95.511442}},
+    {title: "Bicentennial Park", location: {lat: 29.611448, lng: -95.540761}}
 ];
 
 
 
 /* Model */
 var Location = function(data) {
-    this.title = data.title;
+    this.title =  data.title;
     this.position = { lat: data.location.lat, lng: data.location.lng};
 }
 

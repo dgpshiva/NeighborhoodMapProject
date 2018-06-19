@@ -80,3 +80,11 @@ body {
     height: 100%;
     width: 100%;
 }
+
+ul {
+    list-style-type: none;
+}
+
+.list-elements {
+    color: grey;
+}
