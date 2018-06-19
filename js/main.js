@@ -33,11 +33,11 @@ renderNavBar();
 // Locations data to be used by the app
 // This can eventually come from a server
 var initialLocations = [
-    {title: "Glenshire Park", location: {lat: 29.647542, lng: -95.536096}},
-    {title: "Gammil Park", location: {lat: 29.634687, lng: -95.518776}},
-    {title: "Fondren Park", location: {lat: 29.632763, lng: -95.514022}},
-    {title: "Buffalo Run Park", location: {lat: 29.614102, lng: -95.511442}},
-    {title: "Bicentennial Park", location: {lat: 29.611448, lng: -95.540761}}
+    {title: "Thai Cottage II", location: {lat: 29.584786, lng: -95.631824}},
+    {title: "Fadi’s Mediterranean Grill", location: {lat: 29.606914, lng: -95.642116}},
+    {title: "Torchy's Tacos", location: {lat: 29.600708, lng: -95.621441}},
+    {title: "Aga's Restaurant & Catering", location: {lat: 29.649128, lng: -95.567608}},
+    {title: "Aling's Chinese", location: {lat: 29.603257, lng: -95.613732}}
 ];
 
 // Global variables
