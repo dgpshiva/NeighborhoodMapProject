@@ -1,7 +1,9 @@
 // Global variables
 var map;
-var markers = [];
 
+// Glocal dict to map each Location to it's corresponding Marker
+// so that retrival of Marker for a Location can be done in O(1)
+var locationTitleMarkerDict = {}
 
 // To toglgle sideNav
 // true = Open
@@ -15,6 +17,8 @@ var mobile = false;
 var ipad = false;
 
 
+// Locations data to be used by the app
+// This can eventually come from a server
 var initialLocations = [
     {title: "Glenshire Park", location: {lat: 29.647542, lng: -95.536096}},
     {title: "Gammil Park", location: {lat: 29.634687, lng: -95.518776}},
@@ -70,7 +74,7 @@ var ViewModel = function() {
 
     // Iterate through locationsList observable array
     // and create actual map markers.
-    // Add them to global markers list
+    // Add them to global locationTitleMarker dict
     self.createMarkers = function() {
         for (var i=0; i<self.locationsList().length; i++) {
             var marker = new google.maps.Marker({
@@ -85,19 +89,15 @@ var ViewModel = function() {
                 toggleBounce(this);
             });
 
-            // Add the marker created to the global markers array
-            markers.push(marker);
+            // Add the marker created to the global locationTitleMarkerDict
+            locationTitleMarkerDict[self.locationsList()[i].title] = marker;
         }
     };
 
     // Function to toggle marker bounce when its corresponding
     // list element is clicked
     self.toggleMarkerBounce = function(data) {
-        markers.forEach( function(marker) {
-            if (marker.title === data.title) {
-                toggleBounce(marker);
-            }
-        });
+        toggleBounce(locationTitleMarkerDict[data.title]);
     }
 }
 
@@ -119,10 +119,10 @@ function initMap() {
     // Putting all the location markers on the map
     var bounds = new google.maps.LatLngBounds();
     // Extend the boundaries of the map for each marker and display the markers
-    for (var i = 0; i < markers.length; i++) {
-        markers[i].setMap(map);
-
-        bounds.extend(markers[i].position);
+    for (var key in locationTitleMarkerDict)
+    {
+        locationTitleMarkerDict[key].setMap(map);
+        bounds.extend(locationTitleMarkerDict[key].position);
     }
     map.fitBounds(bounds);
 }
