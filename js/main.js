@@ -43,7 +43,7 @@ var initialLocations = [
 // Global variables
 var map;
 
-// Glocal dict to map each Location to it's corresponding Marker
+// Global dict to map each Location to it's corresponding Marker
 // so that retrival of Marker for a Location can be done in O(1)
 var locationTitleMarkerDict = {}
 
@@ -111,8 +111,9 @@ var ViewModel = function() {
         toggleBounce(locationTitleMarkerDict[data.title]);
     }
 
-
-    self.filterLocations = function(data) {
+    // Function to filter location titles list and
+    // markers based on user input filter text
+    self.filterLocations = function() {
         // Array to store the Location objects matching the filter applied by user
         var filteredLocationsList = [];
 
@@ -122,7 +123,7 @@ var ViewModel = function() {
             return;
         }
 
-        // Iterating the self.masterLocationsList array to find Location objects
+        // Iterating the masterLocationsList array to find Location objects
         // matching the filter applied by user.
         // And loading them into the filteredLocationsList array
         self.masterLocationsList.forEach( function(location) {
@@ -146,6 +147,28 @@ var ViewModel = function() {
             locationTitleMarkerDict[location.title].setMap(map);
         });
     };
+
+    // Function to reset filter
+    self.resetFilter = function() {
+
+        // Clearing filter text
+        self.filterText("");
+
+        // Clearing the locationsList observable array
+        self.locationsList.removeAll();
+
+        // Clearing all the exisitng markers from the map
+        for (var key in locationTitleMarkerDict) {
+            locationTitleMarkerDict[key].setMap(null);
+        }
+
+        // Using the masterLocationsList array to populate the
+        // locationsList observable array and placing all the markers on the map
+        self.masterLocationsList.forEach( function(location) {
+            self.locationsList.push(location);
+            locationTitleMarkerDict[location.title].setMap(map);
+        });
+    }
 }
 
 
@@ -185,10 +208,23 @@ function renderNavBar() {
     else if (mobile) {
         document.getElementById("title-text").style.fontSize = "20px";
         document.getElementById("title-text").style.marginBottom = "25px";
+
         document.getElementById("filter-locations-text").style.width = "100%";
-        document.getElementById("filter-locations-text").style.height = "20px";
+
+        document.getElementById("filter-controls").style.border = "none";
+
         document.getElementById("filter-locations").style.width = "100%";
         document.getElementById("filter-locations").style.justifyContent = "center";
+        document.getElementById("filter-locations").style.margin = "5px 3px";
+        document.getElementById("filter-locations").style.borderRadius = "3px";
+
+        document.getElementById("reset-controls").style.margin = "0";
+
+        document.getElementById("reset-button").style.width = "100%";
+        document.getElementById("reset-button").style.justifyContent = "center";
+        document.getElementById("reset-button").style.margin = "0 3px";
+        document.getElementById("reset-button").style.borderRadius = "3px";
+
         document.getElementById("mySidenav").style.width = "200px";
         document.getElementById("main").style.marginLeft = "200px";
     }

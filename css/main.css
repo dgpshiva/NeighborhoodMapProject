@@ -24,15 +24,17 @@ body {
     margin-bottom: 50px;
 }
 
-.filter-controls {
+#filter-controls {
     width: 100%;
     display: flex;
+    align-items: center;
     flex-flow: row wrap;
     border: 1px solid rgb(0, 111, 148);
 }
 
 #filter-locations-text {
     width: 75%;
+    height: 20px;
 }
 
 #filter-locations {
@@ -49,7 +51,7 @@ body {
     background-color: #008CBA;
     border: none;
     border-radius: 0px 3px 3px 0px;
-  }
+}
 
 #filter-locations:hover {
     background-color: rgb(0, 111, 148);
@@ -63,6 +65,38 @@ body {
 .filter-icon {
     display: inline-block;
 }
+
+#reset-controls {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    flex-flow: row-reverse wrap;
+}
+
+#reset-button {
+    width: 23%;
+    margin-right: 3px;
+    padding: 7px 28px;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #fff;
+    background-color: #008CBA;
+    border: none;
+    border-radius: 0px 3px 3px 0px;
+}
+
+#reset-button:hover {
+    background-color: rgb(0, 111, 148);
+}
+
+#reset-button:active {
+    background-color: rgb(0, 111, 148);
+    transform: translateY(3px);
+}
+
 
 #main {
     transition: margin-left .4s;

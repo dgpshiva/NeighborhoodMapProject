@@ -11,11 +11,14 @@
 <body>
     <div id="mySidenav" class="sidenav">
         <h2 id="title-text">Parks in Stafford</h2>
-        <div class="filter-controls">
+        <div id="filter-controls">
             <input id="filter-locations-text" type="text" placeholder="Filter Parks" data-bind="value: filterText">
             <button id="filter-locations" data-bind="click: filterLocations">
                 <i class="fas fa-filter filter-icon"></i>&nbsp;Filter
             </button>
+        </div>
+        <div id="reset-controls">
+            <button id="reset-button" data-bind="click: resetFilter">Reset</button>
         </div>
         <ul id="location-list"></ul>
         <ul data-bind="foreach: locationsList">
