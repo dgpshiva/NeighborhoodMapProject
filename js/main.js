@@ -60,6 +60,8 @@ var ViewModel = function() {
 
     var self = this;
 
+    self.filterText = ko.observable("");
+
     // Function to toggle sideNav open and close
     // on click of hamburger
     self.toggleNav = function() {
@@ -71,8 +73,10 @@ var ViewModel = function() {
     // Create Location object using each location in json input
     // and add it to the locationsList observable array
     self.locationsList = ko.observableArray([]);
+    self.masterLocationsList = [];
     initialLocations.forEach( function(location) {
         self.locationsList.push(new Location(location));
+        self.masterLocationsList.push(new Location(location));
     });
 
     // Iterate through locationsList observable array
@@ -102,6 +106,24 @@ var ViewModel = function() {
     self.toggleMarkerBounce = function(data) {
         toggleBounce(locationTitleMarkerDict[data.title]);
     }
+
+
+    self.filterLocations = function(data) {
+        var filteredLocationsList = [];
+        if (self.filterText() === "") {
+            window.alert("Please enter some text to filter.");
+            return;
+        }
+        self.masterLocationsList.forEach( function(location) {
+            if (location.title.toUpperCase().indexOf(self.filterText().toUpperCase()) > -1) {
+                filteredLocationsList.push(location);
+            }
+        });
+        self.locationsList.removeAll();
+        filteredLocationsList.forEach( function(location) {
+            self.locationsList.push(location);
+        });
+    };
 }
 
 

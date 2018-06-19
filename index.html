@@ -12,8 +12,8 @@
     <div id="mySidenav" class="sidenav">
         <h2 id="title-text">Parks in Stafford</h2>
         <div class="filter-controls">
-            <input id="filter-locations-text" type="text" placeholder="Filter Parks">
-            <button id="filter-locations">
+            <input id="filter-locations-text" type="text" placeholder="Filter Parks" data-bind="value: filterText">
+            <button id="filter-locations" data-bind="click: filterLocations">
                 <i class="fas fa-filter filter-icon"></i>&nbsp;Filter
             </button>
         </div>
