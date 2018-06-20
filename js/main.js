@@ -96,10 +96,17 @@ var ViewModel = function() {
                 id: i
             });
 
-            // Add event listener to make marker bounce when clicked
-            marker.addListener('click', function() {
-                toggleBounce(this);
-            });
+            // Add event listener to toggle marker bounce animation
+            // and infoWindow when clicked.
+            // Using closure so that each marker has its own infoWindow
+            // which can be controlled independently of others.
+            var infoWindow = new google.maps.InfoWindow();
+            marker.addListener('click', function(markerCopy, infoWindowCopy) {
+                return function() {
+                    markerClicked(markerCopy, infoWindowCopy);
+                }
+            }(marker, infoWindow));
+
 
             // Add the marker created to the global locationTitleMarkerDict
             locationTitleMarkerDict[self.locationsList()[i].title] = marker;
@@ -115,7 +122,7 @@ var ViewModel = function() {
         data.isSelected() ? data.isSelected(false) : data.isSelected(true);
 
         // Toggling selected location marker's animation
-        toggleBounce(locationTitleMarkerDict[data.title]);
+        markerClicked(locationTitleMarkerDict[data.title]);
     }
 
     // Function to filter location titles list and
@@ -188,6 +195,12 @@ function initMap() {
         zoom: 13
     });
 
+    // var largeInfoWindow = new google.maps.InfoWindow();
+    // // Make sure the marker property is cleared if the infoWindow is closed.
+    // largeInfoWindow.addListener('closeclick', function() {
+    //     largeInfoWindow.marker = null;
+    // });
+
     // Calling the ViewModel funtion to create the markers
     // and populate the global markers[] array with them
     var vm = new ViewModel();
@@ -196,8 +209,7 @@ function initMap() {
     // Putting all the location markers on the map
     var bounds = new google.maps.LatLngBounds();
     // Extend the boundaries of the map for each marker and display the markers
-    for (var key in locationTitleMarkerDict)
-    {
+    for (var key in locationTitleMarkerDict) {
         locationTitleMarkerDict[key].setMap(map);
         bounds.extend(locationTitleMarkerDict[key].position);
     }
@@ -246,12 +258,21 @@ function renderNavBar() {
     }
 }
 
-function toggleBounce(marker) {
+function markerClicked(marker, infoWindow) {
+
+    // Toggle bounce animation and infowindow
     if (marker.getAnimation() !== null) {
         marker.setAnimation(null);
+        infoWindow.marker = null;
     }
     else {
-       marker.setAnimation(google.maps.Animation.BOUNCE);
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+
+        // Set the infoWindow on the current clicked marker
+        infoWindow.marker = marker;
+
+        // Open the infoWindow on the correct marker.
+        infoWindow.open(map, marker);
     }
 }
 
