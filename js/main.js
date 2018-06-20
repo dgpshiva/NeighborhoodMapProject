@@ -45,7 +45,7 @@ var map;
 
 // Global dict to map each Location to it's corresponding Marker
 // so that retrival of Marker for a Location can be done in O(1)
-var locationTitleMarkerDict = {}
+var titleMarkerDict = {};
 
 
 /* Model */
@@ -86,7 +86,7 @@ var ViewModel = function() {
 
     // Iterate through locationsList observable array
     // and create actual map markers.
-    // Add them to global locationTitleMarker dict
+    // Add them to global titleMarker dict
     self.createMarkers = function() {
         for (var i=0; i<self.locationsList().length; i++) {
             var marker = new google.maps.Marker({
@@ -98,36 +98,41 @@ var ViewModel = function() {
 
             // Add event listener to toggle marker bounce animation
             // and infoWindow when clicked.
-            // Using closure so that each marker has its own infoWindow
-            // which can be controlled independently of others.
             var infoWindow = new google.maps.InfoWindow();
-            marker.addListener('click', function(markerCopy, infoWindowCopy) {
+            infoWindow.addListener('closeclick', function(markerCopy, locationCopy) {
                 return function() {
-                    markerClicked(markerCopy, infoWindowCopy);
+                    markerCopy.setAnimation(null);
+                    this.close();
+                    locationCopy.isSelected(false);
                 }
-            }(marker, infoWindow));
+            }(marker, self.locationsList()[i]));
 
+            marker.infowindow = infoWindow;
 
-            // Add the marker created to the global locationTitleMarkerDict
-            locationTitleMarkerDict[self.locationsList()[i].title] = marker;
+            marker.addListener('click', function(markerCopy, locationCopy) {
+                return function() {
+                    markerClicked(markerCopy, locationCopy);
+                }
+            }(marker, self.locationsList()[i]));
+
+            // Add the marker created to the global titleMarkerDict
+            titleMarkerDict[self.locationsList()[i].title] = marker;
         }
     };
 
-    // Function to toggle marker bounce when its corresponding
+    // Function to toggle marker bounce and inforWindow when its corresponding
     // list element is clicked
     self.toggleSelected = function(data) {
 
-        // Toggling isSelected property of model
-        // This is bound to the css class to be applied on selection
-        data.isSelected() ? data.isSelected(false) : data.isSelected(true);
-
-        // Toggling selected location marker's animation
-        markerClicked(locationTitleMarkerDict[data.title]);
+        // Toggling selected location marker's animation, infoWindow
+        // and list element css class
+        markerClicked(titleMarkerDict[data.title], data);
     }
 
     // Function to filter location titles list and
     // markers based on user input filter text
     self.filterLocations = function() {
+
         // Array to store the Location objects matching the filter applied by user
         var filteredLocationsList = [];
 
@@ -150,15 +155,15 @@ var ViewModel = function() {
         self.locationsList.removeAll();
 
         // Clearing all the exisitng markers from the map
-        for (var key in locationTitleMarkerDict) {
-            locationTitleMarkerDict[key].setMap(null);
+        for (var key in titleMarkerDict) {
+            titleMarkerDict[key].setMap(null);
         }
 
         // Loading the locationsList observable array with Location objects filtered.
         // And placing their markers on the map
         filteredLocationsList.forEach( function(location) {
             self.locationsList.push(location);
-            locationTitleMarkerDict[location.title].setMap(map);
+            titleMarkerDict[location.title].setMap(map);
         });
     };
 
@@ -172,15 +177,15 @@ var ViewModel = function() {
         self.locationsList.removeAll();
 
         // Clearing all the exisitng markers from the map
-        for (var key in locationTitleMarkerDict) {
-            locationTitleMarkerDict[key].setMap(null);
+        for (var key in titleMarkerDict) {
+            titleMarkerDict[key].setMap(null);
         }
 
         // Using the masterLocationsList array to populate the
         // locationsList observable array and placing all the markers on the map
         self.masterLocationsList.forEach( function(location) {
             self.locationsList.push(location);
-            locationTitleMarkerDict[location.title].setMap(map);
+            titleMarkerDict[location.title].setMap(map);
         });
     }
 }
@@ -195,23 +200,16 @@ function initMap() {
         zoom: 13
     });
 
-    // var largeInfoWindow = new google.maps.InfoWindow();
-    // // Make sure the marker property is cleared if the infoWindow is closed.
-    // largeInfoWindow.addListener('closeclick', function() {
-    //     largeInfoWindow.marker = null;
-    // });
-
-    // Calling the ViewModel funtion to create the markers
-    // and populate the global markers[] array with them
-    var vm = new ViewModel();
+    // Calling the ViewModel function to create the markers
+    // and populate the global titleMarkerDict dict with them
     vm.createMarkers();
 
     // Putting all the location markers on the map
     var bounds = new google.maps.LatLngBounds();
     // Extend the boundaries of the map for each marker and display the markers
-    for (var key in locationTitleMarkerDict) {
-        locationTitleMarkerDict[key].setMap(map);
-        bounds.extend(locationTitleMarkerDict[key].position);
+    for (var key in titleMarkerDict) {
+        titleMarkerDict[key].setMap(map);
+        bounds.extend(titleMarkerDict[key].position);
     }
     map.fitBounds(bounds);
 }
@@ -258,23 +256,34 @@ function renderNavBar() {
     }
 }
 
-function markerClicked(marker, infoWindow) {
+function markerClicked(clickedMarker, location) {
+
+    var markerInfoWindow = clickedMarker.infowindow;
 
     // Toggle bounce animation and infowindow
-    if (marker.getAnimation() !== null) {
-        marker.setAnimation(null);
-        infoWindow.marker = null;
+    if (clickedMarker.getAnimation() !== null) {
+        clickedMarker.setAnimation(null);
+        markerInfoWindow.close();
+
+        // isSelected property is bound to the css class
+        // to be applied on list element on selection
+        location.isSelected(false);
     }
     else {
-        marker.setAnimation(google.maps.Animation.BOUNCE);
+        // toggle clickedMarker bounce animation
+        clickedMarker.setAnimation(google.maps.Animation.BOUNCE);
 
         // Set the infoWindow on the current clicked marker
-        infoWindow.marker = marker;
+        markerInfoWindow.marker = clickedMarker;
 
         // Open the infoWindow on the correct marker.
-        infoWindow.open(map, marker);
+        markerInfoWindow.open(map, clickedMarker);
+
+        // isSelected property is bound to the css class
+        // to be applied on list element on selection
+        location.isSelected(true);
     }
 }
 
-
-ko.applyBindings(new ViewModel());
+var vm = new ViewModel();
+ko.applyBindings(vm);
