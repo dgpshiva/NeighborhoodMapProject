@@ -160,11 +160,15 @@ var ViewModel = function() {
         }
 
         // Loading the locationsList observable array with Location objects filtered.
-        // And placing their markers on the map
+        // And placing their markers on the map.
+        // Also bounding the map to filtered markers
+        var bounds = new google.maps.LatLngBounds();
         filteredLocationsList.forEach( function(location) {
             self.locationsList.push(location);
             titleMarkerDict[location.title].setMap(map);
+            bounds.extend(titleMarkerDict[location.title].position);
         });
+        map.fitBounds(bounds);
     };
 
     // Function to reset filter
@@ -182,11 +186,15 @@ var ViewModel = function() {
         }
 
         // Using the masterLocationsList array to populate the
-        // locationsList observable array and placing all the markers on the map
+        // locationsList observable array and placing all the markers on the map.
+        // Also redefining bounds of map to all markers
+        var bounds = new google.maps.LatLngBounds();
         self.masterLocationsList.forEach( function(location) {
             self.locationsList.push(location);
             titleMarkerDict[location.title].setMap(map);
+            bounds.extend(titleMarkerDict[location.title].position);
         });
+        map.fitBounds(bounds);
     }
 }
 
@@ -214,6 +222,10 @@ function initMap() {
     map.fitBounds(bounds);
 }
 
+
+function googleError() {
+    window.alert("Unable to load Google Maps!");
+}
 
 
 // Helper functions
