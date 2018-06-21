@@ -260,6 +260,12 @@ function markerClicked(clickedMarker, location) {
 
     var markerInfoWindow = clickedMarker.infowindow;
 
+    var fourSquareApiSearchUrl = "https://api.foursquare.com/v2/venues/search?client_id=TL1CUWH2JXZLJ4HV4B5PM0W0NJXO40EZRF2152HQ1P21IGQE&client_secret=XELO1HXFNWCNVVI0GAHR3U0WZBKCUQFJIPYRHAI00DFQ0P1Y&v=20180323"
+                            + "&ll=" + location.position.lat + "," + location.position.lng;
+    var fsRequestTimeOut = setTimeout(function(){
+        markerInfoWindow.setContent("Failed to get a response from FourSquare!");
+    }, 8000);
+
     // Toggle bounce animation and infowindow
     if (clickedMarker.getAnimation() !== null) {
         clickedMarker.setAnimation(null);
@@ -270,6 +276,24 @@ function markerClicked(clickedMarker, location) {
         location.isSelected(false);
     }
     else {
+
+        $.ajax({
+            url: fourSquareApiSearchUrl,
+            success: function(response) {
+                var searchReponseObj = response;
+                if (searchReponseObj.meta.code == 200) {
+                    populateInfoWindow(searchReponseObj, markerInfoWindow, clickedMarker);
+                    clearTimeout(fsRequestTimeOut);
+                }
+                else if (searchReponseObj.meta.errorType == "rate_limit_exceeded") {
+                    markerInfoWindow.setContent("Rate limit to FourSquare exceeded. Try again tomorrow.");
+                }
+                else {
+                    markerInfoWindow.setContent("Failed to get response from FourSquare!");
+                }
+            }
+        });
+
         // toggle clickedMarker bounce animation
         clickedMarker.setAnimation(google.maps.Animation.BOUNCE);
 
@@ -283,6 +307,53 @@ function markerClicked(clickedMarker, location) {
         // to be applied on list element on selection
         location.isSelected(true);
     }
+}
+
+function populateInfoWindow(responseObj, infoWindow, marker) {
+    var venues = responseObj.response.venues;
+    var venueId;
+    var i;
+    var venue;
+    for (i=0; i<venues.length; i++) {
+        venue = venues[i];
+        if (venue.name.includes(marker.title)) {
+            venueId = venue.id;
+            break;
+        }
+    }
+
+    var fourSquareApiVenueUrl = "https://api.foursquare.com/v2/venues/" +
+                                    venueId + "?client_id=TL1CUWH2JXZLJ4HV4B5PM0W0NJXO40EZRF2152HQ1P21IGQE&client_secret=XELO1HXFNWCNVVI0GAHR3U0WZBKCUQFJIPYRHAI00DFQ0P1Y&v=20180323";
+
+    var fsRequestTimeOut = setTimeout(function(){
+        markerInfoWindow.setContent("Failed to get a response from FourSquare!");
+    }, 8000);
+
+    $.ajax({
+        url: fourSquareApiVenueUrl,
+        success: function(response) {
+            var venueReponseObj = response;
+            if (venueReponseObj.meta.code == 200) {
+
+                var venueObj = venueReponseObj.response.venue;
+                var phoneNumber = venueObj.contact.formattedPhone;
+                var address = venueObj.location.formattedAddress;
+                var price = venueObj.price.message;
+                var rating = venueObj.rating;
+                var ratingColor = venueObj.ratingColor;
+                var status = venueObj.hours.status;
+
+                clearTimeout(fsRequestTimeOut);
+            }
+            else if (venueReponseObj.meta.errorType == "rate_limit_exceeded") {
+                markerInfoWindow.setContent("Rate limit to FourSquare exceeded. Try again tomorrow.");
+            }
+            else {
+                markerInfoWindow.setContent("Failed to get response from FourSquare!");
+            }
+        }
+    });
+
 }
 
 var vm = new ViewModel();
