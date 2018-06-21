@@ -276,7 +276,7 @@ function markerClicked(clickedMarker, location) {
         location.isSelected(false);
     }
     else {
-
+        // Making AJAX request to FourSquare search api endpoint
         $.ajax({
             url: fourSquareApiSearchUrl,
             success: function(response) {
@@ -285,15 +285,18 @@ function markerClicked(clickedMarker, location) {
                     populateInfoWindow(searchReponseObj, markerInfoWindow, clickedMarker);
                     clearTimeout(fsRequestTimeOut);
                 }
-                else if (searchReponseObj.meta.errorType == "rate_limit_exceeded") {
-                    markerInfoWindow.setContent("Rate limit to FourSquare exceeded. Try again tomorrow.");
+            },
+            error: function(errResponse) {
+                if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
+                    markerInfoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
+                }
+                else if (errResponse.responseJSON.meta.errorType == "quota_exceeded") {
+                    infoWindow.setContent("Daily call quota to FourSquare exceeded.\nPlease try again tomorrow.");
                 }
                 else {
                     markerInfoWindow.setContent("Failed to get response from FourSquare!");
                 }
-            },
-            error: function() {
-                markerInfoWindow.setContent("Failed to get a response from FourSquare!");
+                clearTimeout(fsRequestTimeOut);
             }
         });
 
@@ -311,6 +314,9 @@ function populateInfoWindow(responseObj, infoWindow, marker) {
     var venueId;
     var i;
     var venue;
+
+    // Since FourSquare returns number of locations for a given lat lng,
+    // iterating through them to find out location of interest
     for (i=0; i<venues.length; i++) {
         venue = venues[i];
         if (venue.name.includes(marker.title)) {
@@ -326,6 +332,7 @@ function populateInfoWindow(responseObj, infoWindow, marker) {
         infoWindow.setContent("Failed to get a response from FourSquare!");
     }, 8000);
 
+    // Making AJAX request to FourSquare venue details api endpoint
     $.ajax({
         url: fourSquareApiVenueUrl,
         success: function(response) {
@@ -354,25 +361,31 @@ function populateInfoWindow(responseObj, infoWindow, marker) {
                     pTagStart + countryCode + pTagEnd +
                     pTagStartMargin + phoneNumber + pTagEnd +
                     pTagStartMargin + "Pricing: " + pricing + pTagEnd +
-                    pTagStartMargin + "Rating: " + rating + pTagEnd +
+
+                    pTagStartMargin + "Rating: " + rating + "\n" +
+                    '<i class="fas fa-star" style="color: #' + ratingColor + '"></i>' +
+                    pTagEnd +
+
+
                     pTagStartMargin + status + pTagEnd +
                     '</div>';
-
-                console.log(displayString);
 
                 infoWindow.setContent(displayString);
 
                 clearTimeout(fsRequestTimeOut);
             }
-            else if (venueReponseObj.meta.errorType == "rate_limit_exceeded") {
-                infoWindow.setContent("Rate limit to FourSquare exceeded. Try again tomorrow.");
+        },
+        error: function(errResponse) {
+            if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
+                infoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
+            }
+            else if (errResponse.responseJSON.meta.errorType == "quota_exceeded") {
+                infoWindow.setContent("Daily call quota to FourSquare exceeded.\nPlease try again tomorrow.");
             }
             else {
                 infoWindow.setContent("Failed to get response from FourSquare!");
             }
-        },
-        error: function() {
-            infoWindow.setContent("Failed to get a response from FourSquare!");
+            clearTimeout(fsRequestTimeOut);
         }
     });
 
