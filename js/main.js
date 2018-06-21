@@ -34,10 +34,10 @@ renderNavBar();
 // This can eventually come from a server
 var initialLocations = [
     {title: "Thai Cottage II", location: {lat: 29.584786, lng: -95.631824}},
-    {title: "Fadi’s Mediterranean Grill", location: {lat: 29.606914, lng: -95.642116}},
+    {title: "Fadis Mediterranean Grill", location: {lat: 29.606914, lng: -95.642116}},
     {title: "Torchy's Tacos", location: {lat: 29.600708, lng: -95.621441}},
     {title: "Aga's Restaurant & Catering", location: {lat: 29.649128, lng: -95.567608}},
-    {title: "Aling's Chinese", location: {lat: 29.603257, lng: -95.613732}}
+    {title: "Aling's Hakka Chinese Cuisine", location: {lat: 29.603257, lng: -95.613732}}
 ];
 
 // Global variables
@@ -291,17 +291,14 @@ function markerClicked(clickedMarker, location) {
                 else {
                     markerInfoWindow.setContent("Failed to get response from FourSquare!");
                 }
+            },
+            error: function() {
+                markerInfoWindow.setContent("Failed to get a response from FourSquare!");
             }
         });
 
         // toggle clickedMarker bounce animation
         clickedMarker.setAnimation(google.maps.Animation.BOUNCE);
-
-        // Set the infoWindow on the current clicked marker
-        markerInfoWindow.marker = clickedMarker;
-
-        // Open the infoWindow on the correct marker.
-        markerInfoWindow.open(map, clickedMarker);
 
         // isSelected property is bound to the css class
         // to be applied on list element on selection
@@ -326,7 +323,7 @@ function populateInfoWindow(responseObj, infoWindow, marker) {
                                     venueId + "?client_id=TL1CUWH2JXZLJ4HV4B5PM0W0NJXO40EZRF2152HQ1P21IGQE&client_secret=XELO1HXFNWCNVVI0GAHR3U0WZBKCUQFJIPYRHAI00DFQ0P1Y&v=20180323";
 
     var fsRequestTimeOut = setTimeout(function(){
-        markerInfoWindow.setContent("Failed to get a response from FourSquare!");
+        infoWindow.setContent("Failed to get a response from FourSquare!");
     }, 8000);
 
     $.ajax({
@@ -336,23 +333,54 @@ function populateInfoWindow(responseObj, infoWindow, marker) {
             if (venueReponseObj.meta.code == 200) {
 
                 var venueObj = venueReponseObj.response.venue;
+                var address = venueObj.location.address;
+                var city = venueObj.location.city;
+                var state = venueObj.location.state;
+                var postalCode = venueObj.location.postalCode;
+                var countryCode = venueObj.location.cc;
                 var phoneNumber = venueObj.contact.formattedPhone;
-                var address = venueObj.location.formattedAddress;
-                var price = venueObj.price.message;
+                var pricing = venueObj.price.message;
                 var rating = venueObj.rating;
                 var ratingColor = venueObj.ratingColor;
                 var status = venueObj.hours.status;
 
+                var pTagStartMargin = '<p style="margin-top: 5px">';
+                var pTagStart = '<p style="margin: 0">';
+                var pTagEnd = '</p>';
+                var displayString =
+                    '<div>' +
+                    pTagStart + address + pTagEnd +
+                    pTagStart + city + ", " + state + " " + postalCode + pTagEnd +
+                    pTagStart + countryCode + pTagEnd +
+                    pTagStartMargin + phoneNumber + pTagEnd +
+                    pTagStartMargin + "Pricing: " + pricing + pTagEnd +
+                    pTagStartMargin + "Rating: " + rating + pTagEnd +
+                    pTagStartMargin + status + pTagEnd +
+                    '</div>';
+
+                console.log(displayString);
+
+                infoWindow.setContent(displayString);
+
                 clearTimeout(fsRequestTimeOut);
             }
             else if (venueReponseObj.meta.errorType == "rate_limit_exceeded") {
-                markerInfoWindow.setContent("Rate limit to FourSquare exceeded. Try again tomorrow.");
+                infoWindow.setContent("Rate limit to FourSquare exceeded. Try again tomorrow.");
             }
             else {
-                markerInfoWindow.setContent("Failed to get response from FourSquare!");
+                infoWindow.setContent("Failed to get response from FourSquare!");
             }
+        },
+        error: function() {
+            infoWindow.setContent("Failed to get a response from FourSquare!");
         }
     });
+
+    // Set the infoWindow on the current clicked marker
+    infoWindow.marker = marker;
+
+    // Open the infoWindow on the correct marker.
+    infoWindow.open(map, marker);
 
 }
 
