@@ -20,7 +20,7 @@ var ViewModel = function() {
     self.navStatus = true;
 
     // true if viewport has mobile dimensions
-    self.mobile = false;
+    self.mobile =  ko.observable(false);
 
     // true if viewport has ipad dimensions
     self.ipad = false;
@@ -28,7 +28,7 @@ var ViewModel = function() {
     // If mobile device, keep the sideNav closed
     if (window.innerWidth < 400) {
         self.navStatus = false;
-        self.mobile = true;
+        self.mobile(true);
     }
 
     // If iPad keep the sideNav open
@@ -40,7 +40,7 @@ var ViewModel = function() {
         self.navStatus = true;
     }
 
-    renderNavBar(self.navStatus, self.mobile, self.ipad);
+    renderNavBar(self.navStatus, self.mobile(), self.ipad);
 
 
     // Locations data to be used by the app.
@@ -77,7 +77,7 @@ var ViewModel = function() {
     // on click of hamburger.
     self.toggleNav = function() {
         self.navStatus = !self.navStatus;
-        renderNavBar(self.navStatus, self.mobile, self.ipad);
+        renderNavBar(self.navStatus, self.mobile(), self.ipad);
     };
 
 
@@ -407,10 +407,6 @@ function renderNavBar(navStatus, mobile, ipad) {
         document.getElementById("reset-button").style.margin = "0 3px";
         document.getElementById("reset-button").style.borderRadius = "3px";
 
-        document.getElementById("list-elements").style.paddingLeft = "5px";
-        document.getElementById("list-elements").style.height = "50px";
-        document.getElementById("list-elements").style.fontSize = "13px";
-
         document.getElementById("mySidenav").style.width = "200px";
         document.getElementById("main").style.marginLeft = "200px";
     }
@@ -429,5 +425,3 @@ function renderNavBar(navStatus, mobile, ipad) {
 
 var vm = new ViewModel();
 ko.applyBindings(vm);
-
-
