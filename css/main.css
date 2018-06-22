@@ -123,14 +123,15 @@ ul {
     padding: 0;
 }
 
-.list-elements {
+#list-elements {
     display: flex;
     flex-flow: row wrap;
     align-items: center;
     padding-left: 20px;
-    height: 40px;
+    height: 75px;
     color: grey;
     text-align: justify;
+    font-size: 20px;
 }
 
 .list-element-selected {

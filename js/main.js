@@ -407,11 +407,16 @@ function renderNavBar(navStatus, mobile, ipad) {
         document.getElementById("reset-button").style.margin = "0 3px";
         document.getElementById("reset-button").style.borderRadius = "3px";
 
+        document.getElementById("list-elements").style.paddingLeft = "5px";
+        document.getElementById("list-elements").style.height = "50px";
+        document.getElementById("list-elements").style.fontSize = "13px";
+
         document.getElementById("mySidenav").style.width = "200px";
         document.getElementById("main").style.marginLeft = "200px";
     }
     else if (ipad) {
         document.getElementById("filter-locations").style.padding = "7px 14px";
+
         document.getElementById("mySidenav").style.width = "400px";
         document.getElementById("main").style.marginLeft = "400px";
     }

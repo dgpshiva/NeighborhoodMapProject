@@ -22,9 +22,7 @@
         </div>
         <ul id="location-list"></ul>
         <ul class="list" data-bind="foreach: locationsList">
-            <li class="list-elements" data-bind="text: title, click: $parent.toggleSelected, css: { 'list-element-selected': isSelected() }"></li>
-            <br>
-            <br>
+            <li id="list-elements" data-bind="text: title, click: $parent.toggleSelected, css: { 'list-element-selected': isSelected() }"></li>
         </ul>
     </div>
     <div id="main">
