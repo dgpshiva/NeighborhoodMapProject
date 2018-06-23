@@ -86,13 +86,22 @@ var ViewModel = function() {
     // Add them to global titleMarker dict
     self.createMarkers = function() {
         self.titleMarkerDict = {};
-        for (var i=0; i<self.locationsList().length; i++) {
+        var i = 0;
+        self.locationsList().forEach( function(location) {
             var marker = new google.maps.Marker({
-                position: self.locationsList()[i].position,
-                title: self.locationsList()[i].title,
+                position: location.position,
+                title: location.title,
                 animation: google.maps.Animation.DROP,
                 id: i
             });
+
+            // for (var i=0; i<self.locationsList().length; i++) {
+            //     var marker = new google.maps.Marker({
+            //         position: self.locationsList()[i].position,
+            //         title: self.locationsList()[i].title,
+            //         animation: google.maps.Animation.DROP,
+            //         id: i
+            //     });
 
             // Add event listener to toggle marker bounce animation
             // and infoWindow when clicked.
@@ -103,7 +112,7 @@ var ViewModel = function() {
                     this.close();
                     locationCopy.isSelected(false);
                 }
-            }(marker, self.locationsList()[i]));
+            }(marker, location));
 
             marker.infowindow = infoWindow;
 
@@ -111,10 +120,12 @@ var ViewModel = function() {
                 return function() {
                     self.markerClicked(markerCopy, locationCopy);
                 }
-            }(marker, self.locationsList()[i]));
+            }(marker, location));
 
-            self.titleMarkerDict[self.locationsList()[i].title] = marker;
-        }
+            self.titleMarkerDict[location.title] = marker;
+
+            i += 1;
+        });
     };
 
 
@@ -181,13 +192,20 @@ var ViewModel = function() {
 
         // Since FourSquare returns number of locations for a given lat lng,
         // iterating through them to find out location of interest.
-        for (i=0; i<venues.length; i++) {
-            venue = venues[i];
+        venues.forEach( function(venue) {
             if (venue.name.includes(marker.title)) {
                 venueId = venue.id;
                 break;
             }
-        }
+        });
+
+        // for (i=0; i<venues.length; i++) {
+        //     venue = venues[i];
+        //     if (venue.name.includes(marker.title)) {
+        //         venueId = venue.id;
+        //         break;
+        //     }
+        // }
 
         var fourSquareApiVenueUrl = "https://api.foursquare.com/v2/venues/" +
                                         venueId + "?client_id=TL1CUWH2JXZLJ4HV4B5PM0W0NJXO40EZRF2152HQ1P21IGQE&client_secret=XELO1HXFNWCNVVI0GAHR3U0WZBKCUQFJIPYRHAI00DFQ0P1Y&v=20180323";
