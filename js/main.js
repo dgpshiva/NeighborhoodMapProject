@@ -160,15 +160,24 @@ var ViewModel = function() {
                     }
                 },
                 error: function(errResponse) {
-                    if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
-                        markerInfoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
-                    }
-                    else if (errResponse.responseJSON.meta.errorType == "quota_exceeded") {
-                        infoWindow.setContent("Daily call quota to FourSquare exceeded.\nPlease try again tomorrow.");
+                    if (errResponse.hasOwnProperty('responseJSON')) {
+                        if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
+                            markerInfoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
+                        }
+                        else if (errResponse.responseJSON.meta.errorType == "quota_exceeded") {
+                            infoWindow.setContent("Daily call quota to FourSquare exceeded.\nPlease try again tomorrow.");
+                        }
                     }
                     else {
                         markerInfoWindow.setContent("Failed to get response from FourSquare!");
                     }
+
+                    // Set the infoWindow on the current clicked marker
+                    markerInfoWindow.marker = clickedMarker;
+
+                    // Open the infoWindow on the correct marker
+                    markerInfoWindow.open(map, clickedMarker);
+
                     clearTimeout(fsRequestTimeOut);
                 }
             });
@@ -192,20 +201,14 @@ var ViewModel = function() {
 
         // Since FourSquare returns number of locations for a given lat lng,
         // iterating through them to find out location of interest.
-        venues.forEach( function(venue) {
+        // using `for` instead of `forEach` here since we want to `break`
+        for (i=0; i<venues.length; i++) {
+            venue = venues[i];
             if (venue.name.includes(marker.title)) {
                 venueId = venue.id;
                 break;
             }
-        });
-
-        // for (i=0; i<venues.length; i++) {
-        //     venue = venues[i];
-        //     if (venue.name.includes(marker.title)) {
-        //         venueId = venue.id;
-        //         break;
-        //     }
-        // }
+        }
 
         var fourSquareApiVenueUrl = "https://api.foursquare.com/v2/venues/" +
                                         venueId + "?client_id=TL1CUWH2JXZLJ4HV4B5PM0W0NJXO40EZRF2152HQ1P21IGQE&client_secret=XELO1HXFNWCNVVI0GAHR3U0WZBKCUQFJIPYRHAI00DFQ0P1Y&v=20180323";
@@ -220,7 +223,6 @@ var ViewModel = function() {
             success: function(response) {
                 var venueReponseObj = response;
                 if (venueReponseObj.meta.code == 200) {
-
                     var venueObj = venueReponseObj.response.venue;
                     var address = venueObj.location.address;
                     var city = venueObj.location.city;
@@ -258,15 +260,18 @@ var ViewModel = function() {
                 }
             },
             error: function(errResponse) {
-                if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
-                    infoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
-                }
-                else if (errResponse.responseJSON.meta.errorType == "quota_exceeded") {
-                    infoWindow.setContent("Daily call quota to FourSquare exceeded.\nPlease try again tomorrow.");
+                if (errResponse.hasOwnProperty('responseJSON')) {
+                    if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
+                        infoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
+                    }
+                    else if (errResponse.responseJSON.meta.errorType == "quota_exceeded") {
+                        infoWindow.setContent("Daily call quota to FourSquare exceeded.\nPlease try again tomorrow.");
+                    }
                 }
                 else {
                     infoWindow.setContent("Failed to get response from FourSquare!");
                 }
+
                 clearTimeout(fsRequestTimeOut);
             }
         });
