@@ -5,6 +5,7 @@ var Location = function(data) {
     this.title =  data.title;
     this.position = { lat: data.location.lat, lng: data.location.lng};
     this.isSelected = ko.observable(false);
+    this.marker;
 }
 
 /* View Model */
@@ -53,11 +54,6 @@ var ViewModel = function() {
         {title: "Aling's Hakka Chinese Cuisine", location: {lat: 29.603257, lng: -95.613732}}
     ];
 
-    // This dict will hold title as key and corresponding marker as values
-    // for the markers currently being displayed on the map.
-    // Will be used to get marker for a location in O(1)
-    self.titleMarkerDict = {};
-
     self.filterText = ko.observable("");
 
     // This is data bound to the locations being displayed in the list
@@ -66,9 +62,7 @@ var ViewModel = function() {
     // Adding the Location objects to this array also
     // This will be used for the search and reseting the filter
     self.masterLocationsList = [];
-
     self.initialLocations.forEach( function(location) {
-        self.locationsList.push(new Location(location));
         self.masterLocationsList.push(new Location(location));
     });
 
@@ -85,15 +79,17 @@ var ViewModel = function() {
     // and create actual map markers.
     // Add them to global titleMarker dict
     self.createMarkers = function() {
-        self.titleMarkerDict = {};
         var i = 0;
-        self.locationsList().forEach( function(location) {
+        self.masterLocationsList.forEach( function(location) {
             var marker = new google.maps.Marker({
                 position: location.position,
                 title: location.title,
                 animation: google.maps.Animation.DROP,
                 id: i
             });
+
+            // Adding the marker to it's location object
+            location.marker = marker;
 
             // Add event listener to toggle marker bounce animation
             // and infoWindow when clicked.
@@ -114,13 +110,17 @@ var ViewModel = function() {
                 }
             }(marker, location));
 
-            self.titleMarkerDict[location.title] = marker;
+            // Pushing the location object to locationList observable array
+            // used to display the titles and markers on the map.
+            self.locationsList.push(location);
 
             i += 1;
         });
     };
 
 
+    // Function to check status of ajax request
+    // and return corresponding Promise.
     self.status = function(response) {
         if (response.ok) {
             return Promise.resolve(response)
@@ -131,6 +131,7 @@ var ViewModel = function() {
     };
 
 
+    // Function to convert ajax resonse to json
     self.json = function(response) {
         return response.json();
     };
@@ -161,10 +162,11 @@ var ViewModel = function() {
                 .then(self.status)
                 .then(self.json)
                 .then ( function(searchReponseObj) {
-                        self.populateInfoWindow(searchReponseObj, markerInfoWindow, clickedMarker);
-                        clearTimeout(fsRequestTimeOut);
+                    clearTimeout(fsRequestTimeOut);
+                    self.populateInfoWindow(searchReponseObj, markerInfoWindow, clickedMarker);
                 })
                 .catch(function(errResponse) {
+                    clearTimeout(fsRequestTimeOut);
                     if (errResponse.hasOwnProperty('responseJSON')) {
                         if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
                             markerInfoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
@@ -182,8 +184,6 @@ var ViewModel = function() {
 
                     // Open the infoWindow on the correct marker
                     markerInfoWindow.open(map, clickedMarker);
-
-                    clearTimeout(fsRequestTimeOut);
                 });
 
             // toggle clickedMarker bounce animation
@@ -204,7 +204,7 @@ var ViewModel = function() {
 
         // Since FourSquare returns number of locations for a given lat lng,
         // iterating through them to find out location of interest.
-        // using `for` instead of `forEach` here since we want to `break`
+        // Using `for` instead of `forEach` here since we want to `break`
         for (i=0; i<venues.length; i++) {
             venue = venues[i];
             if (venue.name.includes(marker.title)) {
@@ -225,6 +225,7 @@ var ViewModel = function() {
             .then(self.status)
             .then(self.json)
             .then ( function(venueReponseObj) {
+                clearTimeout(fsRequestTimeOut);
                 var venueObj = venueReponseObj.response.venue;
                 var address = venueObj.location.address;
                 var city = venueObj.location.city;
@@ -257,10 +258,9 @@ var ViewModel = function() {
                     '</div>';
 
                 infoWindow.setContent(displayString);
-
-                clearTimeout(fsRequestTimeOut);
             })
             .catch(function(errResponse) {
+                clearTimeout(fsRequestTimeOut);
                 if (errResponse.hasOwnProperty('responseJSON')) {
                     if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
                         infoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
@@ -272,8 +272,6 @@ var ViewModel = function() {
                 else {
                     infoWindow.setContent("Failed to get response from FourSquare!");
                 }
-
-                clearTimeout(fsRequestTimeOut);
             });
 
             // Set the infoWindow on the current clicked marker
@@ -286,10 +284,9 @@ var ViewModel = function() {
 
     // Function to toggle marker bounce, infoWindow and css styling
     // when its corresponding list element is clicked.
-    self.toggleSelected = function(data) {
-        self.markerClicked(self.titleMarkerDict[data.title], data);
+    self.toggleSelected = function(location) {
+        self.markerClicked(location.marker, location);
     }
-
 
 
     // Function to filter location titles list and
@@ -302,40 +299,28 @@ var ViewModel = function() {
             return;
         }
 
+        // Hiding markers currently displaying on the map
+        self.locationsList().forEach( function(location) {
+            location.marker.setVisible(false);
+        });
+
         // Clearing the locationsList observable array
         self.locationsList.removeAll();
 
         // Populating locationsList observable array with location objects
         // that have title that includes user's filter text.
+        // And making their markers visible.
+        // Also bounding the map to displayed markers
+        var bounds = new google.maps.LatLngBounds();
         self.masterLocationsList.forEach( function(location) {
             if (location.title.toUpperCase().indexOf(self.filterText().toUpperCase()) > -1) {
+                location.marker.setVisible(true);
+                bounds.extend(location.marker.position);
                 self.locationsList.push(location);
             }
         });
-
-        // Clearing all the existing markers from the map
-        // NOTE: Preferrably always have this after the above filtering operation
-        //       So that user still sees old markers till new ones are filtered out
-        //       if in future there are lot of locations and filter operation takes time.
-        //       Just better UX.
-        for (var key in self.titleMarkerDict) {
-            self.titleMarkerDict[key].setMap(null);
-        }
-
-        // createMarkers() will use the updated locationsList obervable array and
-        // create new markers and populate them into the titleMarker dict
-        self.createMarkers();
-
-        // Putting all the location markers on the map
-        // NOTE: Rebounding map to filtered markers
-        var bounds = new google.maps.LatLngBounds();
-        for (var key in self.titleMarkerDict) {
-            self.titleMarkerDict[key].setMap(map);
-            bounds.extend(self.titleMarkerDict[key].position);
-        }
         map.fitBounds(bounds);
     };
-
 
 
     // Function to reset filter
@@ -344,36 +329,27 @@ var ViewModel = function() {
         // Clearing filter text
         self.filterText("");
 
+        // Hiding markers currently displaying on the map
+        self.locationsList().forEach( function(location) {
+            location.marker.setVisible(false);
+        });
+
         // Clearing the locationsList observable array
         self.locationsList.removeAll();
 
+        // Populating locationsList observable array with
+        // all loction objects.
+        // And making their markers visible.
+        // Also bounding the map to displayed markers
+        var bounds = new google.maps.LatLngBounds();
         self.masterLocationsList.forEach( function(location) {
+            location.marker.setVisible(true);
+            bounds.extend(location.marker.position);
             self.locationsList.push(location);
         });
-
-        // Clearing all the existing markers from the map
-        // NOTE: Preferrably always have this after the above operation
-        //       So that user still sees old markers till new ones are created.
-        //       Just better UX.
-        for (var key in self.titleMarkerDict) {
-            self.titleMarkerDict[key].setMap(null);
-        }
-
-        // createMarkers() will use the updated locationsList obervable array and
-        // create new markers and populate them into the titleMarker dict
-        self.createMarkers();
-
-        // Putting all the location markers on the map
-        // NOTE: Rebounding map to the markers
-        var bounds = new google.maps.LatLngBounds();
-        for (var key in self.titleMarkerDict) {
-            self.titleMarkerDict[key].setMap(map);
-            bounds.extend(self.titleMarkerDict[key].position);
-        }
         map.fitBounds(bounds);
     }
 }
-
 
 
 
@@ -385,18 +361,19 @@ function initMap() {
         zoom: 13
     });
 
-    // Calling the ViewModels createMarkers() function
-    // createMarkers() will use the locationsList obervable array and
-    // create new markers and populate them into the titleMarker dict
+    // Calling the ViewModels createMarkers() function.
+    // createMarkers() will use the location objects in the masterLocationList array
+    // to create markers, add them to their corresponding location obejcts and
+    // populate the locationList observable array with those location objects.
     vm.createMarkers();
 
     // Putting all the location markers on the map
     // NOTE: Bounding map to the markers
     var bounds = new google.maps.LatLngBounds();
-    for (var key in vm.titleMarkerDict) {
-        vm.titleMarkerDict[key].setMap(map);
-        bounds.extend(vm.titleMarkerDict[key].position);
-    }
+    vm.locationsList().forEach( function(location) {
+        location.marker.setMap(map);
+        bounds.extend(location.marker.position);
+    });
     map.fitBounds(bounds);
 }
 
@@ -404,7 +381,6 @@ function initMap() {
 function googleError() {
     window.alert("Unable to load Google Maps!");
 }
-
 
 
 // Helper functions
