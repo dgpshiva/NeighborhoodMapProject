@@ -95,14 +95,6 @@ var ViewModel = function() {
                 id: i
             });
 
-            // for (var i=0; i<self.locationsList().length; i++) {
-            //     var marker = new google.maps.Marker({
-            //         position: self.locationsList()[i].position,
-            //         title: self.locationsList()[i].title,
-            //         animation: google.maps.Animation.DROP,
-            //         id: i
-            //     });
-
             // Add event listener to toggle marker bounce animation
             // and infoWindow when clicked.
             var infoWindow = new google.maps.InfoWindow();
@@ -129,6 +121,21 @@ var ViewModel = function() {
     };
 
 
+    self.status = function(response) {
+        if (response.ok) {
+            return Promise.resolve(response)
+        }
+        else {
+            return Promise.reject(new Error(response.statusText))
+        }
+    };
+
+
+    self.json = function(response) {
+        return response.json();
+    };
+
+
     self.markerClicked = function(clickedMarker, location) {
 
         var markerInfoWindow = clickedMarker.infowindow;
@@ -150,16 +157,14 @@ var ViewModel = function() {
         }
         else {
             // Making AJAX request to FourSquare search api endpoint
-            $.ajax({
-                url: fourSquareApiSearchUrl,
-                success: function(response) {
-                    var searchReponseObj = response;
-                    if (searchReponseObj.meta.code == 200) {
+            fetch(fourSquareApiSearchUrl)
+                .then(self.status)
+                .then(self.json)
+                .then ( function(searchReponseObj) {
                         self.populateInfoWindow(searchReponseObj, markerInfoWindow, clickedMarker);
                         clearTimeout(fsRequestTimeOut);
-                    }
-                },
-                error: function(errResponse) {
+                })
+                .catch(function(errResponse) {
                     if (errResponse.hasOwnProperty('responseJSON')) {
                         if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
                             markerInfoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
@@ -179,8 +184,7 @@ var ViewModel = function() {
                     markerInfoWindow.open(map, clickedMarker);
 
                     clearTimeout(fsRequestTimeOut);
-                }
-            });
+                });
 
             // toggle clickedMarker bounce animation
             clickedMarker.setAnimation(google.maps.Animation.BOUNCE);
@@ -193,7 +197,6 @@ var ViewModel = function() {
 
 
     self.populateInfoWindow = function(responseObj, infoWindow, marker) {
-
         var venues = responseObj.response.venues;
         var venueId;
         var i;
@@ -218,48 +221,46 @@ var ViewModel = function() {
         }, 8000);
 
         // Making AJAX request to FourSquare venue details api endpoint
-        $.ajax({
-            url: fourSquareApiVenueUrl,
-            success: function(response) {
-                var venueReponseObj = response;
-                if (venueReponseObj.meta.code == 200) {
-                    var venueObj = venueReponseObj.response.venue;
-                    var address = venueObj.location.address;
-                    var city = venueObj.location.city;
-                    var state = venueObj.location.state;
-                    var postalCode = venueObj.location.postalCode;
-                    var countryCode = venueObj.location.cc;
-                    var phoneNumber = venueObj.contact.formattedPhone;
-                    var pricing = venueObj.price.message;
-                    var rating = venueObj.rating;
-                    var ratingColor = venueObj.ratingColor;
-                    var status = venueObj.hours.status;
+        fetch(fourSquareApiVenueUrl)
+            .then(self.status)
+            .then(self.json)
+            .then ( function(venueReponseObj) {
+                var venueObj = venueReponseObj.response.venue;
+                var address = venueObj.location.address;
+                var city = venueObj.location.city;
+                var state = venueObj.location.state;
+                var postalCode = venueObj.location.postalCode;
+                var countryCode = venueObj.location.cc;
+                var phoneNumber = venueObj.contact.formattedPhone;
+                var pricing = venueObj.price.message;
+                var rating = venueObj.rating;
+                var ratingColor = venueObj.ratingColor;
+                var status = venueObj.hours.status;
 
-                    var pTagStartMargin = '<p style="margin-top: 5px">';
-                    var pTagStart = '<p style="margin: 0">';
-                    var pTagEnd = '</p>';
-                    var displayString =
-                        '<div>' +
-                        pTagStart + address + pTagEnd +
-                        pTagStart + city + ", " + state + " " + postalCode + pTagEnd +
-                        pTagStart + countryCode + pTagEnd +
-                        pTagStartMargin + phoneNumber + pTagEnd +
-                        pTagStartMargin + "Pricing: " + pricing + pTagEnd +
+                var pTagStartMargin = '<p style="margin-top: 5px">';
+                var pTagStart = '<p style="margin: 0">';
+                var pTagEnd = '</p>';
+                var displayString =
+                    '<div>' +
+                    pTagStart + address + pTagEnd +
+                    pTagStart + city + ", " + state + " " + postalCode + pTagEnd +
+                    pTagStart + countryCode + pTagEnd +
+                    pTagStartMargin + phoneNumber + pTagEnd +
+                    pTagStartMargin + "Pricing: " + pricing + pTagEnd +
 
-                        pTagStartMargin + "Rating: " + rating + "\n" +
-                        '<i class="fas fa-star" style="color: #' + ratingColor + '"></i>' +
-                        pTagEnd +
+                    pTagStartMargin + "Rating: " + rating + "\n" +
+                    '<i class="fas fa-star" style="color: #' + ratingColor + '"></i>' +
+                    pTagEnd +
 
 
-                        pTagStartMargin + status + pTagEnd +
-                        '</div>';
+                    pTagStartMargin + status + pTagEnd +
+                    '</div>';
 
-                    infoWindow.setContent(displayString);
+                infoWindow.setContent(displayString);
 
-                    clearTimeout(fsRequestTimeOut);
-                }
-            },
-            error: function(errResponse) {
+                clearTimeout(fsRequestTimeOut);
+            })
+            .catch(function(errResponse) {
                 if (errResponse.hasOwnProperty('responseJSON')) {
                     if (errResponse.responseJSON.meta.errorType == "rate_limit_exceeded") {
                         infoWindow.setContent("Rate limit to FourSquare exceeded.\nPlease try again tomorrow.");
@@ -273,15 +274,13 @@ var ViewModel = function() {
                 }
 
                 clearTimeout(fsRequestTimeOut);
-            }
-        });
+            });
 
-        // Set the infoWindow on the current clicked marker
-        infoWindow.marker = marker;
+            // Set the infoWindow on the current clicked marker
+            infoWindow.marker = marker;
 
-        // Open the infoWindow on the correct marker
-        infoWindow.open(map, marker);
-
+            // Open the infoWindow on the correct marker
+            infoWindow.open(map, marker);
     };
 
 
@@ -290,6 +289,7 @@ var ViewModel = function() {
     self.toggleSelected = function(data) {
         self.markerClicked(self.titleMarkerDict[data.title], data);
     }
+
 
 
     // Function to filter location titles list and
@@ -337,6 +337,7 @@ var ViewModel = function() {
     };
 
 
+
     // Function to reset filter
     self.resetFilter = function() {
 
@@ -375,6 +376,7 @@ var ViewModel = function() {
 
 
 
+
 // Maps success callback function
 function initMap() {
     // Constructor creates a new map - only center and zoom are required.
@@ -402,6 +404,7 @@ function initMap() {
 function googleError() {
     window.alert("Unable to load Google Maps!");
 }
+
 
 
 // Helper functions
