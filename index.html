@@ -1,39 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<meta content="IE=edge" http-equiv="X-UA-Compatible">
-	<title>Neighborhood Map</title>
-	<meta content="width=device-width, initial-scale=1" name="viewport">
-	<link href="https://use.fontawesome.com/releases/v5.0.12/css/all.css" rel="stylesheet">
-	<link href="css/main.css" media="screen" rel="stylesheet" type="text/css">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Neighborhood Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://use.fontawesome.com/releases/v5.0.12/css/all.css" rel="stylesheet">
+    <link rel="stylesheet" media="screen" href="css/main.css" />
 </head>
 <body>
-	<div class="sidenav" id="mySidenav">
-		<h2 id="title-text">My Favourite Restaurants</h2>
-		<div id="filter-controls">
-			<input data-bind="value: filterText" id="filter-locations-text" placeholder="Filter Parks" type="text"> <button data-bind="click: filterLocations" id="filter-locations"><i class="fas fa-filter filter-icon"></i>&nbsp;Filter</button>
-		</div>
-		<div id="reset-controls">
-			<button data-bind="click: resetFilter" id="reset-button">Reset</button>
-		</div>
-		<ul id="location-list"></ul>
-		<ul class="list" data-bind="foreach: locationsList">
-			<li class="list-elements" data-bind="text: title, click: $parent.toggleSelected, css: { 'list-element-selected': isSelected(), 'mobile-list-elements': $parent.mobile() }"></li>
-			<li style="list-style: none"><br></li>
-		</ul>
-	</div>
-	<div id="main">
-		<span class="hamburger" data-bind="click: toggleNav">&#9776;</span>
-	</div>
-	<div id="map"></div>
-	<script src="js/lib/knockout-3.2.0.js">
-	</script>
-	<script src="js/lib/jquery.min.js">
-	</script>
-	<script defer onerror="googleError()" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPO4pFWQ4o_ClesgktNVhPLxSlinrW32E&v=3&callback=initMap">
-	</script>
-	<script src="js/main.js">
-	</script>
+    <div id="mySidenav" class="sidenav">
+        <h2 id="title-text">My Favourite Restaurants</h2>
+        <div id="filter-controls">
+            <input id="filter-locations-text" type="text" placeholder="Filter Parks" data-bind="value: filterText">
+            <button id="filter-locations" data-bind="click: filterLocations">
+                <i class="fas fa-filter filter-icon"></i>&nbsp;Filter
+            </button>
+        </div>
+        <div id="reset-controls">
+            <button id="reset-button" data-bind="click: resetFilter">Reset</button>
+        </div>
+        <ul id="location-list"></ul>
+        <ul class="list" data-bind="foreach: locationsList">
+            <li class="list-elements"
+                data-bind="text: title, click: $parent.toggleSelected,
+                            css: { 'list-element-selected': isSelected(),
+                                    'mobile-list-elements': $parent.mobile()  }">
+            </li>
+            <br>
+        </ul>
+    </div>
+    <div id="main">
+        <span class="hamburger" data-bind="click: toggleNav">&#9776;</span>
+    </div>
+    <div id="map"></div>
+
+    <script defer src="js/lib/knockout-3.2.0.js"></script>
+    <script defer src="js/lib/jquery.min.js"></script>
+    <script defer src="js/main.js"></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPO4pFWQ4o_ClesgktNVhPLxSlinrW32E&v=3&callback=initMap" onerror="googleError()"></script>
+
 </body>
 </html>
