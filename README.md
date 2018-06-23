@@ -66,3 +66,4 @@ This repository contains code for a SPA (Single Page Applicaton). It is a Neighb
 ## References
 - The restaurant details have been powered by [FourSquare](https://developer.foursquare.com/)
 -  This [blog post](https://leewc.com/articles/google-maps-infowindow/) by Wen Chuan Lee was really helpful in understanding how to create multiple info windows on Google Maps
+- This [blog post](https://scotch.io/tutorials/how-to-use-the-javascript-fetch-api-to-get-data) helped understand using the `fetch` API
